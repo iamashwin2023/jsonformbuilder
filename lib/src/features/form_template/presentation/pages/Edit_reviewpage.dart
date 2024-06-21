@@ -46,6 +46,12 @@ class _EditReviewPageState extends State<EditReviewPage> {
               },
               child: Text('Save Changes'),
             ),
+             SizedBox(width: 20,height: 20),
+            ElevatedButton(
+        onPressed: () {
+          Navigator.popAndPushNamed(context,'\templatesWithData');
+        },
+        child: Text("Go Back"))
           ],
         ),
       ),
