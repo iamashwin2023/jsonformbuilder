@@ -117,6 +117,13 @@ class _ReviewPageState extends State<ReviewPage> {
               },
               child: Text('Submit'),
             ),
+            SizedBox(width: 20,height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Cancel'),
+            ),
           ],
         ),
       ),

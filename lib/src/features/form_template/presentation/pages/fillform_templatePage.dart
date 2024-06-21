@@ -411,7 +411,7 @@ class _FillFormTemplatePageState extends State<FillFormTemplatePage> {
   }
 
   void _navigateToReviewPage() {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => ReviewPage(
