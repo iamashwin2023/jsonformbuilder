@@ -170,7 +170,15 @@ class _TemplatesWithDataState extends State<TemplatesWithData> {
     if (id != null) {
       ApiService.deleteTemplatesWithData(id.toString());
       setState(() {
-        templates.removeWhere((template) => template.id == id);
+        //templates.removeWhere((template) => template.id == id);        
+         int index = templates.indexWhere((template) => template.id == id);
+
+            if (index != -1) {
+              // Remove the template and corresponding template response at the same index
+              templates.removeAt(index);
+              templatesResponse.removeAt(index);
+            }
+
       });
     }
   }
