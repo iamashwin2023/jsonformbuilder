@@ -29,7 +29,7 @@ class AdminPage extends StatelessWidget {
               onPressed: () {
                 Navigator.pushNamed(context, '/company_detiles');
               },
-              child: Text('Company detiles'),
+              child: Text('Company details'),
             ),
           ],
         ),

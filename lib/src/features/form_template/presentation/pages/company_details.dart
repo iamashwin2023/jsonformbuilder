@@ -6,14 +6,14 @@ import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:typed_data'; // for Uint8List
 
-class CompanyDetiles extends StatefulWidget {
-  const CompanyDetiles({super.key});
+class CompanyDetails extends StatefulWidget {
+  const CompanyDetails({super.key});
 
   @override
-  State<CompanyDetiles> createState() => _CompanyDetilesState();
+  State<CompanyDetails> createState() => _CompanyDetailsState();
 }
 
-class _CompanyDetilesState extends State<CompanyDetiles> {
+class _CompanyDetailsState extends State<CompanyDetails> {
   String? _fileName;
   Uint8List? _fileBytes;
   String? _mediaType;

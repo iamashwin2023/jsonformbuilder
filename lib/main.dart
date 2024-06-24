@@ -4,12 +4,12 @@ import 'package:jsontoformbuilder/src/features/authentication/presentation/pages
 import 'package:jsontoformbuilder/src/features/authentication/presentation/pages/LoginPage.dart';
 import 'package:jsontoformbuilder/src/features/authentication/presentation/pages/UserPage.dart';
 import 'package:jsontoformbuilder/src/features/form_template/presentation/pages/available_templates.dart';
-import 'package:jsontoformbuilder/src/features/form_template/presentation/pages/company_detiles.dart';
 import 'package:jsontoformbuilder/src/features/form_template/presentation/pages/create_template_screen.dart';
 import 'package:jsontoformbuilder/src/features/form_template/presentation/pages/saved_template_screen.dart';
 import 'package:jsontoformbuilder/src/features/form_template/presentation/pages/templates_with_data.dart';
 import 'package:jsontoformbuilder/src/features/form_template/presentation/providers/data_source_provider.dart';
 import 'package:provider/provider.dart';
+import 'src/features/form_template/presentation/pages/company_details.dart';
 import 'src/features/form_template/presentation/pages/preview_create_template_screen.dart';
 
 void main() {
@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
         '/admin': (context) => AdminPage(),
         '/create_template': (context) => CreateTemplateScreen(),
         '/saved_template': (context) => SavedTemplateScreen(),
-        '/company_detiles': (context) => CompanyDetiles(),
+        '/company_detiles': (context) => CompanyDetails(),
         '/user': (context) => UserPage(),
         '/AvailableTemplates': (context) => AvailableTemplatesScreen(),
         '/templatesWithData': (context) => TemplatesWithData(),
