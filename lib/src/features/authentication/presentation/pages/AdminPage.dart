@@ -19,12 +19,14 @@ class AdminPage extends StatelessWidget {
                 },
                 child: Text('Create Template'),
               ),
+              SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 Navigator.pushNamed(context, '/saved_template');
               },
               child: Text('Saved Templates'),
             ),
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 Navigator.pushNamed(context, '/company_detiles');
