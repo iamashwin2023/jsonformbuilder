@@ -6,6 +6,9 @@ import 'package:jsontoformbuilder/src/features/form_template/data/models/templat
 import 'package:jsontoformbuilder/src/features/form_template/presentation/providers/data_source_provider.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/models/media.dart';
+import '../../data/models/template_data.dart';
+
 class EditReviewPage extends StatefulWidget {
   final Map<String, dynamic> formData;
   DataRecordResponseModel template;
@@ -16,6 +19,28 @@ class EditReviewPage extends StatefulWidget {
 }
 
 class _EditReviewPageState extends State<EditReviewPage> {
+  List<TemplateDataEntry> templateDatasEntry = [];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    initializeData();
+  }
+
+  Future<void> initializeData() async {
+    Map<String, dynamic> dataMap = jsonDecode(widget.template.inputData!);
+    TemplateResponseModel templateResponse =
+        TemplateResponseModel.fromJson(dataMap);
+    List<dynamic> jsonList = jsonDecode(templateResponse.templateData!);
+
+    List<TemplateDataEntry> newData =
+        jsonList.map((json) => TemplateDataEntry.fromJson(json)).toList();
+    setState(() {
+      templateDatasEntry = newData;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final dataSourceProvider = Provider.of<DataSourceProvider>(context);
@@ -29,29 +54,69 @@ class _EditReviewPageState extends State<EditReviewPage> {
           children: [
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ListView(
-                  children: widget.formData.entries.map((entry) {
-                    return ListTile(
-                      title: Text(entry.key),
-                      subtitle: Text(entry.value.toString()),
-                    );
-                  }).toList(),
+                padding: const EdgeInsets.all(16.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Reviewing Form Data:',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Scrollbar(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: templateDatasEntry.length,
+                          itemBuilder: (context, index) {
+                            var dataEntry = templateDatasEntry[index];
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${dataEntry.label}:',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    '${dataEntry.value}',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
             ElevatedButton(
               onPressed: () {
                 _editTemplate(dataSourceProvider);
+                _editMediaFile(dataSourceProvider);
               },
               child: Text('Save Changes'),
             ),
-             SizedBox(width: 20,height: 20),
+            SizedBox(width: 20, height: 20),
             ElevatedButton(
-        onPressed: () {
-          Navigator.popAndPushNamed(context,'\templatesWithData');
-        },
-        child: Text("Go Back"))
+                onPressed: () {
+                  Navigator.popAndPushNamed(context, '\templatesWithData');
+                },
+                child: Text("Go Back"))
           ],
         ),
       ),
@@ -80,18 +145,20 @@ class _EditReviewPageState extends State<EditReviewPage> {
     }
   }
 
-  Future<void> _uploadMediaFile(DataSourceProvider dataSourceProvider) async {
-    String apiUrl = 'https://keysapi.bsite.net/api/Media';
+  Future<void> _editMediaFile(DataSourceProvider dataSourceProvider) async {
+    MediaModel mediaFile = dataSourceProvider.mediaFile;
+    String apiUrl =
+        'https://keysapi.bsite.net/api/Media/guid/${mediaFile.guid}';
 
     try {
       final Map<String, String> headers = {"Content-Type": "application/json"};
-      final response = await http.post(
+      final response = await http.put(
         Uri.parse(apiUrl),
         headers: headers,
         body: jsonEncode(dataSourceProvider.mediaFile),
       );
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 204) {
         print('File uploaded successfully');
       } else {
         print('Failed to upload file. Error: ${response.statusCode}');
