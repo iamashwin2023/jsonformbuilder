@@ -194,7 +194,9 @@ class _PreviewEditTemplateDataPageState
         title: Text('Preview Form'),
       ),
       body: Center(
-        child: Padding(
+        child: _isLoading // Check if the page is still loading data
+            ? CircularProgressIndicator() // Show a loading spinner
+        : Padding(
           padding: const EdgeInsets.all(8.0),
           child: Form(
             key: _formKey,
