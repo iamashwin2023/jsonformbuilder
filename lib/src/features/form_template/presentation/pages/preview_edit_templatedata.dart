@@ -585,7 +585,8 @@ class _PreviewEditTemplateDataPageState
         _videoController = null;
       });
 
-      String? fileGuid = await _uploadMediaFile(_fileBytes!, _fileName!);
+      String? fileGuid =
+          await _uploadMediaFile(_fileBytes!, _fileName!, element);
 
       // Update the form data entry with the file name
       if (fileGuid != null) {
@@ -668,18 +669,19 @@ class _PreviewEditTemplateDataPageState
     Navigator.of(context).pop();
   }
 
-  Future<String?> _uploadMediaFile(Uint8List fileBytes, String fileName) async {
+  Future<String?> _uploadMediaFile(
+      Uint8List fileBytes, String fileName, TemplateDataEntry element) async {
     String base64File = base64Encode(fileBytes);
     var uuid = Uuid();
 
     MediaModel media = MediaModel(
-      guid: uuid.v4(),
+      guid: element.value,
       mediaFile: base64File,
       templateDataId: 2,
-      title: 'a',
+      title: 'aaa',
       fileType: fileName.split('.').last,
-      description: 'a',
-      mediaType: 'a',
+      description: 'aaa',
+      mediaType: 'Image',
     );
 
     // Store media file locally using Provider
