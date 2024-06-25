@@ -314,6 +314,7 @@ class _FillFormTemplatePageState extends State<FillFormTemplatePage> {
       onPressed: () => _showPopup(context, dataSourceProvider),
       child: Text("Save"),
     ));
+    formWidgets.add(SizedBox(height: 20,));
     formWidgets.add(ElevatedButton(
       onPressed: () {
         Navigator.pop(context);
