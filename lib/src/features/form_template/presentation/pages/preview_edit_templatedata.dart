@@ -576,7 +576,7 @@ class _PreviewEditTemplateDataPageState
         jsonEncode(templateDatasEntry.map((e) => e.toJson()).toList());
     widget.templateWithData.inputData = jsonEncode(templateInput);
 
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => EditReviewPage(

@@ -221,7 +221,7 @@ class _EditTemplatePageState extends State<EditTemplatePage> {
                             Provider.of<DataSourceProvider>(context,
                                     listen: false)
                                 .updateTemplateData(templateDatas);
-                            Navigator.push(
+                            Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => PreviewEditTemplateScreen(

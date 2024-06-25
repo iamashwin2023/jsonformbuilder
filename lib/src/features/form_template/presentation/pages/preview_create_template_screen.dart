@@ -141,6 +141,12 @@ class _PreviewCreateTemplateScreenState
     formWidgets.add(ElevatedButton(
         onPressed: () => _showPopup(context, dataSourceProvider),
         child: Text("Save")));
+    formWidgets.add(ElevatedButton(
+        onPressed: () {
+          Navigator.pop(context);
+        },
+        child: Text("Cancel")));
+
     return formWidgets;
   }
 
@@ -481,7 +487,11 @@ class _PreviewCreateTemplateScreenState
                 onPressed: () {
                   _saveTemplate(
                       dataSourceProvider.templateData, brandName.text);
-                  Navigator.pop(context);
+                  Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/admin',
+                (route) => false,
+              );
                 }),
             TextButton(
               child: Text('Cancel'),

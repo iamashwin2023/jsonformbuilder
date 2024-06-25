@@ -116,6 +116,7 @@ class _ReviewPageState extends State<ReviewPage> {
               onPressed: () async {
                 await _uploadMediaFile(dataSourceProvider);
                 _saveTemplate(dataSourceProvider);
+                Navigator.pop(context);
               },
               child: Text('Submit'),
             ),

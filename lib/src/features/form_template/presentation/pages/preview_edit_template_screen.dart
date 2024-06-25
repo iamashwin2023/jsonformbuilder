@@ -370,6 +370,11 @@ class _PreviewEditTemplateScreenState extends State<PreviewEditTemplateScreen> {
     formWidgets.add(ElevatedButton(
         onPressed: () => _showPopup(context, dataSourceProvider),
         child: Text("Save")));
+    formWidgets.add(ElevatedButton(
+        onPressed: () {
+          Navigator.pop(context);
+        },
+        child: Text("Cancel")));
 
     return formWidgets;
   }
@@ -460,7 +465,11 @@ class _PreviewEditTemplateScreenState extends State<PreviewEditTemplateScreen> {
                   });
                   _saveEditedTemplate(
                       dataSourceProvider.templateData, widget.template);
-                  Navigator.pop(context);
+                   Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/admin',
+                (route) => false,
+              );
                 }),
             TextButton(
               child: Text('Cancel'),
