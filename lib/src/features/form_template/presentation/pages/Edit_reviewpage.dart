@@ -105,9 +105,16 @@ class _EditReviewPageState extends State<EditReviewPage> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                var filePickerEntry = templateDatasEntry.firstWhere(
+                    (entry) => entry.componentName == 'Filepicker',
+                    orElse: () =>
+                        TemplateDataEntry()); // Return an empty TemplateDataEntry instead of null
+
+                if (filePickerEntry.componentName != null) {
+                  await _editMediaFile(dataSourceProvider, templateDatasEntry);
+                }
                 _editTemplate(dataSourceProvider);
-                _editMediaFile(dataSourceProvider);
               },
               child: Text('Save Changes'),
             ),
@@ -145,26 +152,41 @@ class _EditReviewPageState extends State<EditReviewPage> {
     }
   }
 
-  Future<void> _editMediaFile(DataSourceProvider dataSourceProvider) async {
-    MediaModel mediaFile = dataSourceProvider.mediaFile;
-    String apiUrl =
-        'https://keysapi.bsite.net/api/Media/guid/${mediaFile.guid}';
-
-    try {
-      final Map<String, String> headers = {"Content-Type": "application/json"};
-      final response = await http.put(
-        Uri.parse(apiUrl),
-        headers: headers,
-        body: jsonEncode(dataSourceProvider.mediaFile),
-      );
-
-      if (response.statusCode == 204) {
-        print('File uploaded successfully');
-      } else {
-        print('Failed to upload file. Error: ${response.statusCode}');
+  Future<void> _editMediaFile(DataSourceProvider dataSourceProvider,
+      List<TemplateDataEntry> templateDatasEntry) async {
+    for (var data in dataSourceProvider.beforEditTemplateData) {
+      for (var media in dataSourceProvider.mediaFiles) {
+        for (var entry in templateDatasEntry) {
+          if (entry.value == media.title) {
+            String apiUrl =
+                'https://keysapi.bsite.net/api/Media/guid/${data.value}';
+            try {
+              final response = await http.put(
+                Uri.parse(apiUrl),
+                headers: {"Content-Type": "application/json"},
+                body: jsonEncode(media),
+              );
+              if (response.statusCode == 204) {
+                print('File uploaded successfully');
+                // Update the entry value after successful API call
+                setState(() {
+                  entry.value = data.value;
+                });
+              } else {
+                print('Failed to upload file. Error: ${response.statusCode}');
+                print('Failed to upload file. Error: ${response.body}');
+              }
+            } catch (e) {
+              print('Error uploading file: $e');
+            }
+          }
+        }
       }
-    } catch (e) {
-      print('Error uploading file: $e');
     }
+    Map<String, dynamic> dataMap = jsonDecode(widget.template.inputData!);
+    TemplateResponseModel templateResponse =
+        TemplateResponseModel.fromJson(dataMap);
+    templateResponse.templateData = jsonEncode(templateDatasEntry);
+    widget.template.inputData = jsonEncode(templateResponse);
   }
 }

@@ -14,15 +14,17 @@ class DataSourceProvider extends ChangeNotifier {
   List<dynamic> _languageData = [];
   List<dynamic> _stateData = [];
   List<dynamic> _bankerData = [];
+
   bool _isLoading = false;
   String? _error;
   List<TemplateData> _templateData = [];
   List<TemplateDataEntry> _templateDataEntry = [];
-  List<MediaModel> _mediaFiles = [];
-  MediaModel _mediaFile = MediaModel();
+  List<TemplateDataEntry> _beforEditTemplateData = [];
+  List<MediaRequestModel> _mediaFiles = [];
+  MediaRequestModel _mediaFile = MediaRequestModel();
 
-  List<MediaModel> get mediaFiles => _mediaFiles;
-  MediaModel get mediaFile => _mediaFile;
+  List<MediaRequestModel> get mediaFiles => _mediaFiles;
+  MediaRequestModel get mediaFile => _mediaFile;
   List<AvailableDataSourcesModel> get availableDataSources =>
       _availableDataSources;
   bool get isLoading => _isLoading;
@@ -33,6 +35,7 @@ class DataSourceProvider extends ChangeNotifier {
   List<dynamic> get stateData => _stateData;
   List<dynamic> get bankerData => _bankerData;
   List<TemplateDataEntry> get templateDataEntry => _templateDataEntry;
+  List<TemplateDataEntry> get beforEditTemplateData => _beforEditTemplateData;
 
   void clearData() {
     _availableDataSources = [];
@@ -50,7 +53,8 @@ class DataSourceProvider extends ChangeNotifier {
   }
 
   void clearMediaFile() {
-    _mediaFile = MediaModel();
+    _mediaFile = MediaRequestModel();
+    _mediaFiles = [];
   }
 
   Future<void> fetchAvailableDataSources() async {
@@ -103,13 +107,23 @@ class DataSourceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateMedia(MediaModel media) {
+  void saveBeforEditTemplateData(List<TemplateDataEntry> newValue) {
+    _beforEditTemplateData = newValue;
+    notifyListeners();
+  }
+
+  void updateMedia(MediaRequestModel media) {
     _mediaFile = media;
     notifyListeners();
   }
 
-  void addMedia(MediaModel media) {
+  void addMedia(MediaRequestModel media) {
     _mediaFiles.add(media);
+    notifyListeners();
+  }
+
+  void removeMedia(MediaRequestModel media) {
+    _mediaFiles.remove(media);
     notifyListeners();
   }
 }

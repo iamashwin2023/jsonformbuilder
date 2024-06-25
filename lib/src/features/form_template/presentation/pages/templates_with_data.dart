@@ -7,8 +7,10 @@ import 'package:jsontoformbuilder/src/features/form_template/data/services/api_s
 import 'package:jsontoformbuilder/src/features/form_template/presentation/pages/edit_template_screen.dart';
 import 'package:jsontoformbuilder/src/features/form_template/presentation/pages/edit_templates_with_data.dart';
 import 'package:jsontoformbuilder/src/features/form_template/presentation/pages/preview_edit_templatedata.dart';
+import 'package:provider/provider.dart';
 
 import '../../data/models/template_data.dart';
+import '../providers/data_source_provider.dart';
 
 class TemplatesWithData extends StatefulWidget {
   const TemplatesWithData({super.key});
@@ -170,15 +172,14 @@ class _TemplatesWithDataState extends State<TemplatesWithData> {
     if (id != null) {
       ApiService.deleteTemplatesWithData(id.toString());
       setState(() {
-        //templates.removeWhere((template) => template.id == id);        
-         int index = templates.indexWhere((template) => template.id == id);
+        //templates.removeWhere((template) => template.id == id);
+        int index = templates.indexWhere((template) => template.id == id);
 
-            if (index != -1) {
-              // Remove the template and corresponding template response at the same index
-              templates.removeAt(index);
-              templatesResponse.removeAt(index);
-            }
-
+        if (index != -1) {
+          // Remove the template and corresponding template response at the same index
+          templates.removeAt(index);
+          templatesResponse.removeAt(index);
+        }
       });
     }
   }

@@ -7,6 +7,8 @@ import 'package:jsontoformbuilder/src/features/form_template/data/models/templat
 import 'package:jsontoformbuilder/src/features/form_template/presentation/providers/data_source_provider.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/models/media.dart';
+
 class ReviewPage extends StatefulWidget {
   final TemplateResponseModel template;
 
@@ -111,13 +113,13 @@ class _ReviewPageState extends State<ReviewPage> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                await _uploadMediaFile(dataSourceProvider);
                 _saveTemplate(dataSourceProvider);
-                _uploadMediaFile(dataSourceProvider);
               },
               child: Text('Submit'),
             ),
-            SizedBox(width: 20,height: 20),
+            SizedBox(width: 20, height: 20),
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -141,7 +143,7 @@ class _ReviewPageState extends State<ReviewPage> {
       final updateResponse =
           await http.post(Uri.parse(url), headers: headers, body: jsonBody);
 
-      if (updateResponse.statusCode == 200) {
+      if (updateResponse.statusCode == 201) {
         print('Data saved successfully.');
       } else {
         print('Failed to save data. Status code: ${updateResponse.statusCode}');
@@ -154,22 +156,51 @@ class _ReviewPageState extends State<ReviewPage> {
 
   Future<void> _uploadMediaFile(DataSourceProvider dataSourceProvider) async {
     String apiUrl = 'https://keysapi.bsite.net/api/Media';
+    dynamic jsonMedio;
+    for (var media in dataSourceProvider.mediaFiles) {
+      MediaRequestModel medioData = MediaRequestModel(
+          description: media.description,
+          templateDataId: media.templateDataId,
+          fileType: media.fileType,
+          mediaFile: media.mediaFile,
+          mediaType: media.mediaType,
+          title: media.title);
 
-    try {
-      final Map<String, String> headers = {"Content-Type": "application/json"};
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: headers,
-        body: jsonEncode(dataSourceProvider.mediaFile),
-      );
+      try {
+        final Map<String, String> headers = {
+          "Content-Type": "application/json"
+        };
+        final response = await http.post(
+          Uri.parse(apiUrl),
+          headers: headers,
+          body: jsonEncode(medioData),
+        );
 
-      if (response.statusCode == 201) {
-        print('File uploaded successfully');
-      } else {
-        print('Failed to upload file. Error: ${response.statusCode}');
+        if (response.statusCode == 201) {
+          print('File uploaded successfully');
+          jsonMedio = jsonDecode(response.body);
+        } else {
+          print('Failed to upload file. Error: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('Error uploading file: $e');
       }
-    } catch (e) {
-      print('Error uploading file: $e');
+      MediaResponseModel mediaData = MediaResponseModel.fromJson(jsonMedio);
+      List<dynamic> jsonList =
+          jsonDecode(widget.template.templateData.toString());
+      templateDatasEntry =
+          jsonList.map((json) => TemplateDataEntry.fromJson(json)).toList();
+      for (var data in templateDatasEntry) {
+        if (data.value == media.title) {
+          setState(() {
+            data.value = mediaData.guid;
+          });
+        }
+      }
+      String jsonData = jsonEncode(templateDatasEntry);
+      setState(() {
+        widget.template.templateData = jsonData;
+      });
     }
   }
 }

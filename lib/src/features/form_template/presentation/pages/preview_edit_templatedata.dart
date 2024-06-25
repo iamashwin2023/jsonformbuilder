@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:jsontoformbuilder/src/constatnt_data/media_types.dart';
 import 'package:jsontoformbuilder/src/features/form_template/data/models/media.dart';
 import 'package:jsontoformbuilder/src/features/form_template/presentation/pages/Edit_reviewpage.dart';
 import 'package:path_provider/path_provider.dart';
@@ -42,11 +43,14 @@ class PreviewEditTemplateDataPage extends StatefulWidget {
 class _PreviewEditTemplateDataPageState
     extends State<PreviewEditTemplateDataPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  String? _fileName;
-  Uint8List? _fileBytes;
-  String? _fileType;
+  Map<int, String?> _fileNames = {};
+  Map<int, Uint8List?> _fileBytes = {};
+  Map<int, String?> _mediaTypes = {};
+  Map<int, String?> _fileTypes = {};
+  Map<int, bool> _uploadSuccess = {};
+  Map<int, bool> _showPreviews = {}; // Track if preview should be shown
+  MediaRequestModel? media;
   TextEditingController fileTitle = TextEditingController();
-  bool _uploadSuccess = false;
   List<TemplateDataEntry> templateDatasEntry = [];
   List<TemplateData> templateDatas = [];
   bool _showPreview = false; // Track if preview should be shown
@@ -65,7 +69,7 @@ class _PreviewEditTemplateDataPageState
   bool _isLoading = true; // Tracks the initialization loading state
   String? _responseMessage;
   VideoPlayerController? _videoController;
-
+  List<TemplateDataEntry> originalTemplateDatasEntry = [];
   @override
   void dispose() {
     _videoController?.dispose();
@@ -88,6 +92,7 @@ class _PreviewEditTemplateDataPageState
       String jsonData = widget.templateWithData.inputData.toString();
       Map<String, dynamic> inputData = jsonDecode(jsonData);
       templateInput = TemplateResponseModel.fromJson(inputData);
+
       List<dynamic> jsonList =
           jsonDecode(templateInput!.templateData.toString());
       for (var jsonData in jsonList) {
@@ -97,7 +102,12 @@ class _PreviewEditTemplateDataPageState
           templateDatasEntry.add(templateDataEntry);
         });
       }
-
+      originalTemplateDatasEntry = List<TemplateDataEntry>.from(
+        templateDatasEntry
+            .map((entry) => TemplateDataEntry.fromJson(entry.toJson())),
+      );
+      Provider.of<DataSourceProvider>(context, listen: false)
+          .saveBeforEditTemplateData(originalTemplateDatasEntry);
       // Fetch Template Data
       dynamic templateResponse =
           await ApiService.getTemplate(templateInput!.id.toString());
@@ -116,6 +126,7 @@ class _PreviewEditTemplateDataPageState
           .updateTemplateData(templateDatas);
       Provider.of<DataSourceProvider>(context, listen: false)
           .updateTemplateDataEntry(templateDatasEntry);
+
       Provider.of<DataSourceProvider>(context, listen: false).clearMediaFile();
     } catch (e) {
       setState(() {
@@ -177,7 +188,6 @@ class _PreviewEditTemplateDataPageState
       );
       mergedData.add(existingEntry);
     }
-
     return mergedData;
   }
 
@@ -400,20 +410,18 @@ class _PreviewEditTemplateDataPageState
           }
           break;
         case 'Filepicker':
+          int index = mergedData.indexOf(element);
           formWidgets.add(Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
               children: [
-                if (element.value != null)
-                  Text('Selected file: ${element.value}')
-                else if (_fileName != null)
-                  Text('Selected file: $_fileName'),
-                if (_fileName != null) Text('Selected file: $_fileName'),
+                if (_fileNames[index] != null)
+                  Text('Selected file: ${_fileNames[index]}'),
                 SizedBox(height: 20),
                 Text(element.label ?? ''),
                 ElevatedButton.icon(
                   onPressed: () async {
-                    String? fileGuid = await _pickFile(element);
+                    String? fileGuid = await _pickFile(element, index);
                     setState(() async {
                       element.value = fileGuid;
                     });
@@ -421,15 +429,21 @@ class _PreviewEditTemplateDataPageState
                   icon: Icon(Icons.file_upload),
                   label: Text(element.hint ?? ''),
                 ),
-                if (_fileName != null)
-                  Text('File selected successfully',
-                      style: TextStyle(color: Colors.green)),
+                _fileNames[index] != null
+                    ? Text('File selected successfully',
+                        style: TextStyle(color: Colors.green))
+                    : element.value != null
+                        ? Text('selected file is there',
+                            style: TextStyle(color: Colors.orange))
+                        : SizedBox(
+                            height: 10,
+                          ),
                 SizedBox(
                   height: 10,
                 ),
-                if (_fileName != null)
+                if (_fileNames[index] != null)
                   ElevatedButton(
-                    onPressed: () => _showPreviewDialog(context),
+                    onPressed: () => _showPreviewDialog(context, index),
                     child: Text('Preview'),
                   ),
               ],
@@ -573,27 +587,30 @@ class _PreviewEditTemplateDataPageState
     );
   }
 
-  Future<String?> _pickFile(TemplateDataEntry element) async {
+  Future<String?> _pickFile(TemplateDataEntry element, int index) async {
     final result =
         await FilePicker.platform.pickFiles(type: FileType.any, withData: true);
 
     if (result != null) {
       setState(() {
-        _fileName = result.files.single.name;
-        _fileBytes = result.files.single.bytes;
-        _fileType = result.files.single.extension;
-        _uploadSuccess = false;
-        _showPreview = false;
+        _fileNames[index] = result.files.single.name;
+        _fileBytes[index] = result.files.single.bytes;
+        _fileTypes[index] = result.files.single.extension;
+        _uploadSuccess[index] = false;
+        _showPreviews[index] = false;
         _videoController = null;
       });
-
-      String? fileGuid =
-          await _uploadMediaFile(_fileBytes!, _fileName!, element);
+      if (_fileTypes[index] != null) {
+        _mediaTypes[index] =
+            mediaType[result.files.single.extension!.toLowerCase()]!;
+      }
+      String? fileGuid = await _uploadMediaFile(
+          _fileBytes[index]!, _fileNames[index]!, element, index);
 
       // Update the form data entry with the file name
       if (fileGuid != null) {
         setState(() {
-          _uploadSuccess = true;
+          _uploadSuccess[index] = true;
         });
         return fileGuid;
       }
@@ -601,27 +618,27 @@ class _PreviewEditTemplateDataPageState
     return null;
   }
 
-  Widget _buildPreviewWidget() {
-    if (_fileType!.toLowerCase() == 'jpg' ||
-        _fileType!.toLowerCase() == 'jpeg' ||
-        _fileType!.toLowerCase() == 'png') {
+  Widget _buildPreviewWidget(int index) {
+    if (_fileTypes[index]!.toLowerCase() == 'jpg' ||
+        _fileTypes[index]!.toLowerCase() == 'jpeg' ||
+        _fileTypes[index]!.toLowerCase() == 'png') {
       // Display image preview
       return Stack(children: [
         Image.memory(
-          _fileBytes!,
+          _fileBytes[index]!,
           fit: BoxFit.contain,
         ),
         Positioned(
           right: 0,
           child: IconButton(
             icon: Icon(Icons.close, color: Colors.red),
-            onPressed: _closePreview,
+            onPressed: () => _closePreview(index),
           ),
         ),
       ]);
-    } else if (_fileType!.toLowerCase() == 'mp4') {
+    } else if (_fileTypes[index]!.toLowerCase() == 'mp4') {
       if (_videoController == null) {
-        _saveFileToTemp(_fileBytes!, _fileName!).then((file) {
+        _saveFileToTemp(_fileBytes[index]!, _fileNames[index]!).then((file) {
           _videoController = VideoPlayerController.file(file);
           _videoController!.initialize().then((_) {
             setState(() {}); // Update the widget after the video initializes
@@ -643,7 +660,7 @@ class _PreviewEditTemplateDataPageState
           top: 0,
           child: IconButton(
             icon: Icon(Icons.close, color: Colors.red),
-            onPressed: _closePreview,
+            onPressed: () => _closePreview(index),
           ),
         ),
       ]);
@@ -659,37 +676,36 @@ class _PreviewEditTemplateDataPageState
     return file;
   }
 
-  void _closePreview() {
+  void _closePreview(int index) {
     setState(() {
-      _fileType = null;
-      _fileBytes = null;
-      _fileName = null;
+      _fileTypes[index] = null;
+      _fileBytes[index] = null;
+      _fileNames[index] = null;
       _videoController?.dispose();
       _videoController = null;
-      _showPreview = false;
+      _showPreviews[index] = false;
     });
+    Provider.of<DataSourceProvider>(context, listen: false).removeMedia(media!);
     Navigator.of(context).pop();
   }
 
-  Future<String?> _uploadMediaFile(
-      Uint8List fileBytes, String fileName, TemplateDataEntry element) async {
+  Future<String?> _uploadMediaFile(Uint8List fileBytes, String fileName,
+      TemplateDataEntry element, int index) async {
     String base64File = base64Encode(fileBytes);
-    var uuid = Uuid();
 
-    MediaModel media = MediaModel(
-      guid: element.value,
+    MediaRequestModel media = MediaRequestModel(
       mediaFile: base64File,
       templateDataId: 2,
-      title: 'aaa',
-      fileType: fileName.split('.').last,
+      title: fileName,
+      fileType: _fileTypes[index],
       description: 'aaa',
-      mediaType: 'Image',
+      mediaType: _mediaTypes[index],
     );
 
     // Store media file locally using Provider
-    Provider.of<DataSourceProvider>(context, listen: false).updateMedia(media);
+    Provider.of<DataSourceProvider>(context, listen: false).addMedia(media);
 
-    return media.guid;
+    return fileName;
   }
 
   void _previewFile() {
@@ -698,7 +714,7 @@ class _PreviewEditTemplateDataPageState
     });
   }
 
-  Future<void> _showPreviewDialog(BuildContext context) async {
+  Future<void> _showPreviewDialog(BuildContext context, int index) async {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -708,7 +724,7 @@ class _PreviewEditTemplateDataPageState
           child: Container(
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
-            child: _buildPreviewWidget(),
+            child: _buildPreviewWidget(index),
           ),
         );
       },

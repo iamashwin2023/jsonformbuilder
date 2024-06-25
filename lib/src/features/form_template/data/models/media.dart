@@ -1,4 +1,41 @@
-class MediaModel {
+class MediaRequestModel {
+  String? mediaFile;
+  String? title;
+  String? description;
+  String? mediaType;
+  String? fileType;
+  int? templateDataId;
+
+  MediaRequestModel(
+      {this.mediaFile,
+      this.title,
+      this.description,
+      this.mediaType,
+      this.fileType,
+      this.templateDataId});
+
+  MediaRequestModel.fromJson(Map<String, dynamic> json) {
+    mediaFile = json['mediaFile'];
+    title = json['title'];
+    description = json['description'];
+    mediaType = json['mediaType'];
+    fileType = json['fileType'];
+    templateDataId = json['templateDataId'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['mediaFile'] = this.mediaFile;
+    data['title'] = this.title;
+    data['description'] = this.description;
+    data['mediaType'] = this.mediaType;
+    data['fileType'] = this.fileType;
+    data['templateDataId'] = this.templateDataId;
+    return data;
+  }
+}
+
+class MediaResponseModel {
   String? guid;
   String? mediaFile;
   String? title;
@@ -7,7 +44,7 @@ class MediaModel {
   String? fileType;
   int? templateDataId;
 
-  MediaModel(
+  MediaResponseModel(
       {this.guid,
       this.mediaFile,
       this.title,
@@ -16,7 +53,7 @@ class MediaModel {
       this.fileType,
       this.templateDataId});
 
-  MediaModel.fromJson(Map<String, dynamic> json) {
+  MediaResponseModel.fromJson(Map<String, dynamic> json) {
     guid = json['guid'];
     mediaFile = json['mediaFile'];
     title = json['title'];
