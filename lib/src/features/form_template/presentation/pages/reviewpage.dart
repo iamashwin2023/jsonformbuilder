@@ -114,7 +114,13 @@ class _ReviewPageState extends State<ReviewPage> {
             ),
             ElevatedButton(
               onPressed: () async {
-                await _uploadMediaFile(dataSourceProvider);
+                var filePickerEntry = templateDatasEntry.firstWhere(
+                    (entry) => entry.componentName == 'Filepicker',
+                    orElse: () =>
+                        TemplateDataEntry()); // Return an empty TemplateDataEntry instead of null
+                if (filePickerEntry.componentName != null) {
+                  await _uploadMediaFile(dataSourceProvider);
+                }
                 _saveTemplate(dataSourceProvider);
                 Navigator.pop(context);
               },
