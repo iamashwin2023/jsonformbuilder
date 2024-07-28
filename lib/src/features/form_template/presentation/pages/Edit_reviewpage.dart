@@ -10,9 +10,8 @@ import '../../data/models/media.dart';
 import '../../data/models/template_data.dart';
 
 class EditReviewPage extends StatefulWidget {
-  final Map<String, dynamic> formData;
   DataRecordResponseModel template;
-  EditReviewPage({required this.formData, required this.template});
+  EditReviewPage({required this.template});
 
   @override
   State<EditReviewPage> createState() => _EditReviewPageState();
@@ -115,7 +114,7 @@ class _EditReviewPageState extends State<EditReviewPage> {
                   await _editMediaFile(dataSourceProvider, templateDatasEntry);
                 }
                 _editTemplate(dataSourceProvider);
-                Navigator.pop(context,'\templatesWithData');
+                Navigator.pop(context, '\templatesWithData');
               },
               child: Text('Save Changes'),
             ),

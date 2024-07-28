@@ -206,17 +206,17 @@ class _PreviewEditTemplateDataPageState
       body: Center(
         child: _isLoading // Check if the page is still loading data
             ? CircularProgressIndicator() // Show a loading spinner
-        : Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Form(
-            key: _formKey,
-            child: Scrollbar(
-              child: ListView(
-                children: formWidgets,
+            : Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Form(
+                  key: _formKey,
+                  child: Scrollbar(
+                    child: ListView(
+                      children: formWidgets,
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -455,7 +455,9 @@ class _PreviewEditTemplateDataPageState
     formWidgets.add(ElevatedButton(
         onPressed: () => _showPopup(context, dataSourceProvider),
         child: Text("Save")));
-    formWidgets.add(SizedBox(height: 20,));
+    formWidgets.add(SizedBox(
+      height: 20,
+    ));
     formWidgets.add(ElevatedButton(
         onPressed: () {
           Navigator.pop(context);
@@ -556,12 +558,6 @@ class _PreviewEditTemplateDataPageState
   }
 
   void _navigateToReviewPage() {
-    Map<String, dynamic> formData = {};
-    formData.addAll(textControllers.map(
-        (key, value) => MapEntry(key, value.text))); // Ensure value is not null
-    formData.addAll(dropdownValues);
-    formData.addAll(checkboxValues);
-
     setState(() {
       for (var entry in templateDatasEntry) {
         if (textControllers.containsKey(entry.label)) {
@@ -581,7 +577,6 @@ class _PreviewEditTemplateDataPageState
       context,
       MaterialPageRoute(
         builder: (context) => EditReviewPage(
-          formData: formData,
           template: widget.templateWithData,
         ),
       ),
